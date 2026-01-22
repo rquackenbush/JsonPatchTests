@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="JsonPatchTests.Havunen/JsonPatchTests.Havunen.csproj" />
+  <Project Path="JsonPatchTests.Newtonsoft/JsonPatchTests.Newtonsoft.csproj" />
+  <Project Path="JsonPatchTests.SystemTextJson/JsonPatchTests.SystemTextJson.csproj" />
+  <Project Path="JsonPatchTests.Common/JsonPatchTests.Common.csproj" />
+</Solution>
