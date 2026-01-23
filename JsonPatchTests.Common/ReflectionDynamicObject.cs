@@ -3,6 +3,8 @@ using System.Reflection;
 
 namespace JsonPatchTests.Common;
 
+// Wraps a CLR object with DynamicObject. Has this been done before? Probably. Just seeing what our
+// options are and how the various JsonPatchDocument implemntations interact with DynamicObjects.
 public class ReflectionDynamicObject(object source) : DynamicObject
 {
     public object Source => source;

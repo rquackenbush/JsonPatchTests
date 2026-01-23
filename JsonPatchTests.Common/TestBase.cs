@@ -49,31 +49,30 @@ public abstract class TestBase(ITestOutputHelper output)
         Output.WriteLine(node.ToString());
     }
 
-    //[Fact]
-    //public void JsonNode_InsertArrayMember()
-    //{
-    //    var source = new
-    //    {
-    //        MyArray = new string[]
-    //        {
-    //            "One",
-    //            "Two"
-    //        }
-    //    };
+    [Fact]
+    public void JsonNode_InsertArrayMember()
+    {
+        var source = new
+        {
+            MyArray = new string[]
+            {
+                "One",
+                "Two"
+            }
+        };
 
-    //    var node = JsonNode.Parse(JsonSerializer.Serialize(source));
+        var node = JsonNode.Parse(JsonSerializer.Serialize(source));
 
-    //    node.ShouldNotBeNull();
+        node.ShouldNotBeNull();
 
-    //    var patchDocument = CreateJsonPatchDocument();
+        var patchDocument = CreateJsonPatchDocument();
 
-    //    patchDocument.Add("/MyArray/", new string[] { });
-    //    patchDocument.Add("/MyArray/-", "First");
+        patchDocument.Add("/MyArray/-", "Three");
 
-    //    patchDocument.Apply(node);
+        patchDocument.Apply(node);
 
-    //    Output.WriteLine(node.ToString());
-    //}
+        Output.WriteLine(node.ToString());
+    }
 
     [Fact]
     public void JsonNode_InsertArrayOnNewMember()
@@ -88,7 +87,8 @@ public abstract class TestBase(ITestOutputHelper output)
 
         var patchDocument = CreateJsonPatchDocument();
 
-        patchDocument.Add("/MyArray/-", "One");
+        patchDocument.Add("/MyArray/", new string[] { });
+        patchDocument.Add("/MyArray/-", "First");
 
         patchDocument.Apply(node);
 
