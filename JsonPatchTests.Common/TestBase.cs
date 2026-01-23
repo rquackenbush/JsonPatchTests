@@ -1,5 +1,6 @@
 ﻿using Shouldly;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,9 +13,154 @@ public abstract class TestBase(ITestOutputHelper output)
         WriteIndented = true
     };
 
-    private Person CreatePerson()
+    protected ITestOutputHelper Output => output;
+
+    protected abstract IJsonPatchDocumentFascade CreateJsonPatchDocument();
+
+    [Fact]
+    public void JsonNode_AddPrimitiveProperty()
     {
-        return new Person
+        var node = JsonNode.Parse("{}");
+
+        node.ShouldNotBeNull();
+
+        var patchDocument = CreateJsonPatchDocument();
+
+        patchDocument.Add("/Add", "added");
+
+        patchDocument.Apply(node);
+
+        Output.WriteLine(node.ToString());
+    }
+
+    [Fact]
+    public void JsonNode_AddNewArrayProperty()
+    {
+        var node = JsonNode.Parse("{}");
+
+        node.ShouldNotBeNull();
+
+        var patchDocument = CreateJsonPatchDocument();
+
+        patchDocument.Add("/NewArray", new string[] { "One", "Two" });
+
+        patchDocument.Apply(node);
+
+        Output.WriteLine(node.ToString());
+    }
+
+    //[Fact]
+    //public void JsonNode_InsertArrayMember()
+    //{
+    //    var source = new
+    //    {
+    //        MyArray = new string[]
+    //        {
+    //            "One",
+    //            "Two"
+    //        }
+    //    };
+
+    //    var node = JsonNode.Parse(JsonSerializer.Serialize(source));
+
+    //    node.ShouldNotBeNull();
+
+    //    var patchDocument = CreateJsonPatchDocument();
+
+    //    patchDocument.Add("/MyArray/", new string[] { });
+    //    patchDocument.Add("/MyArray/-", "First");
+
+    //    patchDocument.Apply(node);
+
+    //    Output.WriteLine(node.ToString());
+    //}
+
+    [Fact]
+    public void JsonNode_InsertArrayOnNewMember()
+    {
+        var source = new
+        {
+        };
+
+        var node = JsonNode.Parse(JsonSerializer.Serialize(source));
+
+        node.ShouldNotBeNull();
+
+        var patchDocument = CreateJsonPatchDocument();
+
+        patchDocument.Add("/MyArray/-", "One");
+
+        patchDocument.Apply(node);
+
+        Output.WriteLine(node.ToString());
+    }
+
+    [Fact]
+    public void JsonNode_RemoveExistingProperty()
+    {
+        var source = new
+        {
+            Foo = "bar"
+        };
+
+        var node = JsonNode.Parse(JsonSerializer.Serialize(source));
+
+        node.ShouldNotBeNull();
+
+        var patchDocument = CreateJsonPatchDocument();
+
+        patchDocument.Remove("Foo");
+
+        patchDocument.Apply(node);
+
+    }
+
+    [Fact]
+    public void JsonNode_AddExistingProperty()
+    {
+        var source = new
+        {
+            Foo = "bar"
+        };
+
+        var node = JsonNode.Parse(JsonSerializer.Serialize(source));
+
+        node.ShouldNotBeNull();
+
+        var patchDocument = CreateJsonPatchDocument();
+
+        patchDocument.Add("Foo", "asdfasfsadf");
+
+        patchDocument.Apply(node);
+
+        Output.WriteLine(node.ToString());
+    }
+
+    [Fact]
+    public void JsonNode_ReplaceExistingProperty()
+    {
+        var source = new
+        {
+            Foo = "bar"
+        };
+
+        var node = JsonNode.Parse(JsonSerializer.Serialize(source));
+
+        node.ShouldNotBeNull();
+
+        var patchDocument = CreateJsonPatchDocument();
+
+        patchDocument.Replace("Foo", "asdfasfsadf");
+
+        patchDocument.Apply(node);
+
+        Output.WriteLine(node.ToString());
+    }
+
+    private void Test<TPatchable>(Func<Person, TPatchable> convertToPatchable, Func<TPatchable, Person> convertFromPatchable)
+        where TPatchable : notnull
+    {
+        var before = new Person
         {
             FirstName = "Kate",
             Metadata = new Metadata
@@ -22,14 +168,6 @@ public abstract class TestBase(ITestOutputHelper output)
                 Id = 42
             }
         };
-    }
-
-    protected abstract IJsonPatchDocumentFascade CreateJsonPatchDocument();
-
-    private void Test<TPatchable>(Func<Person, TPatchable> convertToPatchable, Func<TPatchable, Person> convertFromPatchable)
-        where TPatchable : notnull
-    {
-        var before = CreatePerson();
 
         var patchable = convertToPatchable(before);
 
@@ -51,16 +189,16 @@ public abstract class TestBase(ITestOutputHelper output)
     }
 
     [Fact]
-    public void JsonDocumentTest()
+    public void Person_JsonDocumentTest()
     {
         Test<JsonDocument>(
-            p =>JsonDocument.Parse(JsonSerializer.Serialize(p)),
+            p => JsonDocument.Parse(JsonSerializer.Serialize(p)),
             p => JsonSerializer.Deserialize<Person>(p)!
         );
     }
 
     [Fact]
-    public void DynamicObjectTest()
+    public void Person_DynamicObjectTest()
     {
         Test<ReflectionDynamicObject>(
             p => new ReflectionDynamicObject(p),
@@ -69,7 +207,7 @@ public abstract class TestBase(ITestOutputHelper output)
     }
 
     [Fact]
-    public void JsonElementTest()
+    public void Person_JsonElementTest()
     {
         Test<JsonElement>(
             p => JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(p)),
@@ -78,7 +216,16 @@ public abstract class TestBase(ITestOutputHelper output)
     }
 
     [Fact]
-    public void PocoTest()
+    public void Person_JsonNodeTest()
+    {
+        Test<JsonNode>(
+            p => JsonNode.Parse(JsonSerializer.Serialize(p))!,
+            p => JsonSerializer.Deserialize<Person>(p)!
+        );
+    }
+
+    [Fact]
+    public void Person_PocoTest()
     {
         Test<Person>(
             p => p,

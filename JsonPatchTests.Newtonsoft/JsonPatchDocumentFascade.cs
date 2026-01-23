@@ -12,8 +12,28 @@ public class JsonPatchDocumentFascade : IJsonPatchDocumentFascade
         _patch.ApplyTo(toPatch);
     }
 
+    public void Add(string path, object? value)
+    {
+        _patch.Add(path, value);
+    }
+
     public void Replace(string path, object? value)
     {
         _patch.Replace(path, value);
+    }
+
+    public void Move(string path, string pathNew)
+    {
+        _patch.Move(path, pathNew);
+    }
+
+    public void Remove(string path)
+    {
+        _patch.Remove(path); 
+    }
+
+    public void Copy(string from, string path)
+    {
+        _patch.Copy(from, path);
     }
 }
